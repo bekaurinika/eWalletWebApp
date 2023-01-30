@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "AHjJfN64DCHk5fRjoJ1a1xYqRT1tN9bNlyc8+7ncqns=",
+  "Source": "eWalletWebApp",
+  "BasePath": "_content/eWalletWebApp",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

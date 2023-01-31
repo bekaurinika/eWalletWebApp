@@ -1,4 +1,5 @@
 ﻿using eWalletWebApp.EfCore;
+using eWalletWebApp.Exceptions;
 using eWalletWebApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,34 +17,26 @@ public class UserController : Controller {
     // GET: /user
     [HttpGet("/users")]
     public IActionResult Get([FromQuery]UserModel userModel) {
-        ResponseType type = ResponseType.Success;
         try {
             IEnumerable<UserModel> data = _db.GetUsers(userModel);
-            if (!data.Any()) {
-                type = ResponseType.NotFound;
-            }
-
-            return Ok(ResponseHandler.GetAppResponse(type, data));
+            return Ok(ResponseHandler.GetAppResponse(data));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 
 
     [HttpGet("/users/{id:guid}")]
     public IActionResult Get(Guid id) {
-        ResponseType type = ResponseType.NotFound;
         try {
-            if (_db.TryGetUserById(id, out UserModel? data)) 
-                type = ResponseType.Success;
+            if (!_db.TryGetUserById(id, out UserModel? data))
+                throw new NotFoundException();
             
-            return Ok(ResponseHandler.GetAppResponse(type, data));
+            return Ok(ResponseHandler.GetAppResponse(data));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 
@@ -51,39 +44,36 @@ public class UserController : Controller {
     // POST: /user
     [HttpPost("/users")]
     public IActionResult Post([FromBody] UserModel user) {
-        ResponseType type = ResponseType.Success;
         try {
             _db.CreateUser(user);
-            return Ok(ResponseHandler.GetAppResponse(type, user));
+            return Ok(ResponseHandler.GetAppResponse(user));
         }
         catch (Exception ex) {
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
     
     // PUT: /user/[id]
     [HttpPut("/users/{id}")]
     public IActionResult Put(Guid id, [FromBody] UserModel user) {
-        ResponseType type = ResponseType.Success;
         try {
             _db.UpdateUser(id, user);
-            return Ok(ResponseHandler.GetAppResponse(type, user));
+            return Ok(ResponseHandler.GetAppResponse(user));
         }
         catch (Exception ex) {
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
     
     // DELETE: /user/[id]
     [HttpDelete("/users/{id}")]
     public IActionResult Delete(Guid id) {
-        ResponseType type = ResponseType.Success;
         try {
             _db.DeleteUser(id);
-            return Ok(ResponseHandler.GetAppResponse(type, "Deleted"));
+            return Ok(ResponseHandler.GetAppResponse("Deleted"));
         }
         catch (Exception ex) {
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 }

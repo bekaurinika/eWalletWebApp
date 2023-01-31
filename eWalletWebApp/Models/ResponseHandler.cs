@@ -1,25 +1,23 @@
-﻿namespace eWalletWebApp.Models; 
+﻿using eWalletWebApp.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
-public class ResponseHandler {
-    public static ApiResponse GetExceptionResponse(Exception ex) {
-        ApiResponse response = new ApiResponse();
-        response.Code = "1";
-        response.Message = ex.Message;
-        return response;
+namespace eWalletWebApp.Models; 
+
+public static class ResponseHandler {
+    public static IActionResult GetExceptionResponse(this Controller controller, Exception ex) {
+        if (ex is NotFoundException) {
+            return controller.NotFound();
+        }
+
+        return controller.Problem();
     }
 
-    public static ApiResponse GetAppResponse(ResponseType type, object? contract) {
-        var response = new ApiResponse(){ResponseData = contract};
-        switch (type) {
-            case ResponseType.Success:
-                response.Code = "0";
-                response.Message = "Success";
-                break;
-            case ResponseType.NotFound:
-                response.Code = "2";
-                response.Message = "Not Found";
-                break;
-        }
+    public static ApiResponse GetAppResponse(object? contract) {
+        var response = new ApiResponse {
+            ResponseData = contract,
+            Code = "200",
+            Message = "Success"
+        };
         return response;
     }
 }

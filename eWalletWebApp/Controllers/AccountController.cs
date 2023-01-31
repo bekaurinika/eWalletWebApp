@@ -1,4 +1,5 @@
 ﻿using eWalletWebApp.EfCore;
+using eWalletWebApp.Exceptions;
 using eWalletWebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,117 +14,82 @@ public class AccountController : Controller {
 
     [HttpGet("/accounts")]
     public IActionResult Get([FromQuery] AccountModel accountModel, [FromQuery] UserModel userModel) {
-        ResponseType type = ResponseType.Success;
         try {
             IEnumerable<AccountModel> data = _db.GetAccounts(accountModel, userModel);
-            if (!data.Any()) {
-                type = ResponseType.NotFound;
-            }
 
-            return Ok(ResponseHandler.GetAppResponse(type, data));
+            return Ok(ResponseHandler.GetAppResponse(data));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 
     [HttpGet("/accounts/{id:guid}")]
     public IActionResult Get(Guid id) {
-        ResponseType type = ResponseType.NotFound;
         try {
-            if (_db.TryGetAccountById(id, out AccountModel? data))
-                type = ResponseType.Success;
+            var account = _db.GetAccountModelById(id);
 
-            return Ok(ResponseHandler.GetAppResponse(type, data));
+            return Ok(ResponseHandler.GetAppResponse(account));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 
     [HttpPost("/accounts")]
     public IActionResult Post([FromBody] AccountModel accountModel) {
-        ResponseType type = ResponseType.Success;
         try {
             _db.CreateAccount(accountModel);
-            return Ok(ResponseHandler.GetAppResponse(type, accountModel));
+            return Ok(ResponseHandler.GetAppResponse(accountModel));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return BadRequest(ResponseHandler.GetExceptionResponse(this, ex));
         }
     }
 
-    //TODO: compare this to users 
     [HttpPut("/accounts/{id:guid}")]
     public IActionResult Put(Guid id, [FromBody] AccountModel accountModel) {
-        ResponseType type = ResponseType.Success;
         try {
-            if (_db.TryGetAccountById(id, out AccountModel? data)) {
-                _db.UpdateAccount(id, accountModel);
-            }
-            else {
-                type = ResponseType.NotFound;
-            }
-
-            return Ok(ResponseHandler.GetAppResponse(type, accountModel));
+            _db.UpdateAccount(id, accountModel);
+            return Ok(ResponseHandler.GetAppResponse(accountModel));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 
     [HttpDelete("/accounts/{id:guid}")]
     public IActionResult Delete(Guid id) {
-        ResponseType type = ResponseType.Success;
         try {
             _db.DeleteAccount(id);
-            return Ok(ResponseHandler.GetAppResponse(type, "Deleted"));
+            return Ok(ResponseHandler.GetAppResponse("Deleted"));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
-    
+
     [HttpPost("/accounts/{id:guid}/add-funds")]
     public IActionResult AddFunds(Guid id, decimal amount) {
-        ResponseType type = ResponseType.Success;
         try {
-            if (_db.TryGetAccountById(id, out AccountModel? data)) {
-                _db.AddFunds(id, amount);
-            }
-            else {
-                type = ResponseType.NotFound;
-            }
+            _db.AddFunds(id, amount);
 
-            return Ok(ResponseHandler.GetAppResponse(type, data));
+            return Ok(ResponseHandler.GetAppResponse("Added: " + amount));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
-    
+
     [HttpPost("/accounts/{id:guid}/remove-funds")]
     public IActionResult RemoveFunds(Guid id, decimal amount) {
-        ResponseType type = ResponseType.Success;
         try {
-            if (_db.TryGetAccountById(id, out AccountModel? data)) {
-                _db.RemoveFunds(id, amount);
-            }
-            else {
-                type = ResponseType.NotFound;
-            }
+            _db.RemoveFunds(id, amount);
 
-            return Ok(ResponseHandler.GetAppResponse(type, data));
+            return Ok(ResponseHandler.GetAppResponse("Removed: " + amount));
         }
         catch (Exception ex) {
-            type = ResponseType.Failure;
-            return BadRequest(ResponseHandler.GetExceptionResponse(ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 }

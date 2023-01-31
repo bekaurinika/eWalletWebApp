@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using eWalletWebApp.EfCore;
+using eWalletWebApp.Exceptions;
 
 namespace eWalletWebApp.Models;
 
@@ -15,6 +16,9 @@ public class DbHelper {
         var dataList = _context.Users.ToList();
 
         dataList.Where(FilterUser).ToList().ForEach(row => response.Add(new UserModel(row, _context)));
+        if(response.Count == 0) 
+            throw new NotFoundException();
+
         return response;
 
         // TODO: filter logic can be improved
@@ -29,13 +33,12 @@ public class DbHelper {
                 result &= user.Age == userModel.Age;
             if (!String.IsNullOrEmpty(userModel.PhoneNumber))
                 result &= user.PhoneNumber == userModel.PhoneNumber;
-
+            
             return result;
         }
     }
 
     public bool TryGetUserById(Guid id, out UserModel? userModel) {
-        //TODO: improve this
         userModel = null;
         var row = _context.Users.FirstOrDefault(d => d.UserId.Equals(id));
         if (row is not null)
@@ -53,27 +56,32 @@ public class DbHelper {
             PhoneNumber = model.PhoneNumber,
             Accounts = model.Accounts
         };
+        
         _context.Users.Add(user);
         _context.SaveChanges();
     }
 
     public void UpdateUser(Guid id, UserModel model) {
-        if (!TryGetUserById(id, out UserModel _user)) return;
+        if (!TryGetUserById(id, out _)) 
+            throw new NotFoundException();
 
         var user = _context.Users.FirstOrDefault(d => d.UserId.Equals(id));
         user.FirstName = model.Firstname ?? user.FirstName;
         user.Surname = model.Surname ?? user.Surname;
         user.Age = model.Age ?? user.Age;
         user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
+        
         _context.SaveChanges();
     }
 
     public void DeleteUser(Guid id) {
-        var dbTable = _context.Users.FirstOrDefault(d => d.UserId.Equals(id));
-        // if (dbTable != null) { // TODO: instead of checking if its null, throw exception (Custom exception here?)
-        _context.Users.Remove(dbTable);
+        var user = _context.Users.FirstOrDefault(d => d.UserId.Equals(id));
+        
+        if (user is null)
+            throw new NotFoundException();
+        
+        _context.Users.Remove(user);
         _context.SaveChanges();
-        // }
     }
 
     public List<AccountModel> GetAccounts(AccountModel accountModel, UserModel userModel) {
@@ -82,7 +90,6 @@ public class DbHelper {
         foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(accountModel)) {
             string name = descriptor.Name;
             object? value = descriptor.GetValue(accountModel);
-            Console.WriteLine("{0}={1}", name, value);
             if (value is not null) {
                 response = response.Where(d => descriptor.GetValue(d).Equals(value)).ToList();
             }
@@ -93,26 +100,28 @@ public class DbHelper {
 
             string name = descriptor.Name;
             object? value = descriptor.GetValue(userModel);
-            Console.WriteLine("{0}={1}", name, value);
             if (value is not null) {
                 response = response.Where(d => {
                     TryGetUserById(d.UserId.Value, out UserModel outUserModel);
-                    Console.WriteLine("DESCRIPTOR-------" + descriptor.GetValue(outUserModel));
                     return descriptor.GetValue(outUserModel).Equals(value);
                 }).ToList();
             }
         }
-
+        
+        if(response.Count == 0) 
+            throw new NotFoundException();
+        
         return response;
     }
 
-    public bool TryGetAccountById(Guid id, out AccountModel? accountModel) {
-        accountModel = null;
-        var row = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
-        if (row is not null)
-            accountModel = new AccountModel(row);
+    public AccountModel GetAccountModelById(Guid id) => new AccountModel(GetAccountById(id));
+        
+    public Account GetAccountById(Guid id) {
+        var account = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
+        if (account is null)
+            throw new NotFoundException();
 
-        return row is not null;
+        return account;
     }
 
     public void CreateAccount(AccountModel model) {
@@ -123,36 +132,38 @@ public class DbHelper {
             Currency = model.Currency,
             UserId = model.UserId
         };
+        
         _context.Accounts.Add(account);
         _context.SaveChanges();
     }
 
     public void UpdateAccount(Guid id, AccountModel model) {
-        if (!TryGetAccountById(id, out AccountModel _account)) return;
-
-        var account = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
+        var account = GetAccountModelById(id);
         account.Name = model.Name ?? account.Name;
         account.Currency = model.Currency ?? account.Currency;
+        
         _context.SaveChanges();
     }
 
     public void DeleteAccount(Guid id) {
-        var account = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
-        // if (dbTable != null) { // TODO: instead of checking if its null, throw exception (Custom exception here?)
+        var account = GetAccountById(id);
+        
         _context.Accounts.Remove(account);
         _context.SaveChanges();
-        // }
     }
 
     public void AddFunds(Guid id, decimal amount) {
-        var account = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
+        var account = GetAccountModelById(id);
         account.Balance += amount;
+        
         _context.SaveChanges();
     }
 
     public void RemoveFunds(Guid id, decimal amount) {
-        var account = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
+        var account = GetAccountModelById(id);
+        
         account.Balance -= amount;
+        
         _context.SaveChanges();
     }
 }

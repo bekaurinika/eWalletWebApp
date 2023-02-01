@@ -2,7 +2,7 @@ To use:
 
 Run psql service
 
-change or match -"EWalletConnection": "Server=localhost;Database=eWallet;Port=9090;User Id=postgres;Password=pgpassword"
+Update or match appsettings.json/"EWalletConnection": "Server=localhost;Database=eWallet;Port=9090;User Id=postgres;Password=pgpassword"
 
 To create database, open terminal on project root dir:
 

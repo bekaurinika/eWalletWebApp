@@ -43,7 +43,7 @@ public class AccountController : Controller {
             return Ok(ResponseHandler.GetAppResponse(accountModel));
         }
         catch (Exception ex) {
-            return BadRequest(ResponseHandler.GetExceptionResponse(this, ex));
+            return ResponseHandler.GetExceptionResponse(this, ex);
         }
     }
 

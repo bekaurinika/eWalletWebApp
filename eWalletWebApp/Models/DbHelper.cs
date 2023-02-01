@@ -125,7 +125,10 @@ public class DbHelper {
     }
 
     public void CreateAccount(AccountModel model) {
-        var account = new Account() {
+        if (!TryGetUserById(model.UserId.Value, out _)) 
+            throw new NotFoundException();
+
+            var account = new Account() {
             AccountId = Guid.NewGuid(),
             Name = model.Name,
             Balance = 0,
@@ -161,7 +164,6 @@ public class DbHelper {
 
     public void RemoveFunds(Guid id, decimal amount) {
         var account = GetAccountModelById(id);
-        
         account.Balance -= amount;
         
         _context.SaveChanges();

@@ -16,7 +16,7 @@ public class DbHelper {
         var dataList = _context.Users.ToList();
 
         dataList.Where(FilterUser).ToList().ForEach(row => response.Add(new UserModel(row, _context)));
-        if(response.Count == 0) 
+        if (response.Count == 0)
             throw new NotFoundException();
 
         return response;
@@ -33,7 +33,7 @@ public class DbHelper {
                 result &= user.Age == userModel.Age;
             if (!String.IsNullOrEmpty(userModel.PhoneNumber))
                 result &= user.PhoneNumber == userModel.PhoneNumber;
-            
+
             return result;
         }
     }
@@ -56,13 +56,13 @@ public class DbHelper {
             PhoneNumber = model.PhoneNumber,
             Accounts = model.Accounts
         };
-        
+
         _context.Users.Add(user);
         _context.SaveChanges();
     }
 
     public void UpdateUser(Guid id, UserModel model) {
-        if (!TryGetUserById(id, out _)) 
+        if (!TryGetUserById(id, out _))
             throw new NotFoundException();
 
         var user = _context.Users.FirstOrDefault(d => d.UserId.Equals(id));
@@ -70,16 +70,16 @@ public class DbHelper {
         user.Surname = model.Surname ?? user.Surname;
         user.Age = model.Age ?? user.Age;
         user.PhoneNumber = model.PhoneNumber ?? user.PhoneNumber;
-        
+
         _context.SaveChanges();
     }
 
     public void DeleteUser(Guid id) {
         var user = _context.Users.FirstOrDefault(d => d.UserId.Equals(id));
-        
+
         if (user is null)
             throw new NotFoundException();
-        
+
         _context.Users.Remove(user);
         _context.SaveChanges();
     }
@@ -107,15 +107,15 @@ public class DbHelper {
                 }).ToList();
             }
         }
-        
-        if(response.Count == 0) 
+
+        if (response.Count == 0)
             throw new NotFoundException();
-        
+
         return response;
     }
 
     public AccountModel GetAccountModelById(Guid id) => new AccountModel(GetAccountById(id));
-        
+
     public Account GetAccountById(Guid id) {
         var account = _context.Accounts.FirstOrDefault(d => d.AccountId.Equals(id));
         if (account is null)
@@ -125,17 +125,17 @@ public class DbHelper {
     }
 
     public void CreateAccount(AccountModel model) {
-        if (!TryGetUserById(model.UserId.Value, out _)) 
+        if (!TryGetUserById(model.UserId.Value, out _))
             throw new NotFoundException();
 
-            var account = new Account() {
+        var account = new Account() {
             AccountId = Guid.NewGuid(),
             Name = model.Name,
             Balance = 0,
             Currency = model.Currency,
             UserId = model.UserId
         };
-        
+
         _context.Accounts.Add(account);
         _context.SaveChanges();
     }
@@ -144,13 +144,13 @@ public class DbHelper {
         var account = GetAccountModelById(id);
         account.Name = model.Name ?? account.Name;
         account.Currency = model.Currency ?? account.Currency;
-        
+
         _context.SaveChanges();
     }
 
     public void DeleteAccount(Guid id) {
         var account = GetAccountById(id);
-        
+
         _context.Accounts.Remove(account);
         _context.SaveChanges();
     }
@@ -158,14 +158,14 @@ public class DbHelper {
     public void AddFunds(Guid id, decimal amount) {
         var account = GetAccountModelById(id);
         account.Balance += amount;
-        
+
         _context.SaveChanges();
     }
 
     public void RemoveFunds(Guid id, decimal amount) {
         var account = GetAccountModelById(id);
         account.Balance -= amount;
-        
+
         _context.SaveChanges();
     }
 }

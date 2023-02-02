@@ -251,3 +251,4 @@
 2023-02-01 16:23:35.086 +04:00 [INF] Account fa53094b-fec8-4017-84ec-51a4e08cd9ef Balance: 151.00
 2023-02-01 16:24:35.082 +04:00 [INF] Account fa53094b-fec8-4017-84ec-51a4e08cd9ef Balance: 151.00
 2023-02-01 16:25:35.083 +04:00 [INF] Account fa53094b-fec8-4017-84ec-51a4e08cd9ef Balance: 151.00
+2023-02-01 16:26:29.090 +04:00 [INF] Stopping Account Logging Service

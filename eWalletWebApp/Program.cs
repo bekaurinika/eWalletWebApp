@@ -36,12 +36,6 @@ var app = builder.Build();
 //Enable CORS
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
-//JSON Serializer - Not working, will comment out for now
-// builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
-//         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-//     .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver
-//         = new DefaultContractResolver());
-
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();

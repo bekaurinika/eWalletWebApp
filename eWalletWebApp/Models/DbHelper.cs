@@ -21,7 +21,6 @@ public class DbHelper {
 
         return response;
 
-        // TODO: filter logic can be improved
         bool FilterUser(User user) {
             bool result = true;
 
@@ -156,14 +155,14 @@ public class DbHelper {
     }
 
     public void AddFunds(Guid id, decimal amount) {
-        var account = GetAccountModelById(id);
+        var account = GetAccountById(id);
         account.Balance += amount;
 
         _context.SaveChanges();
     }
 
     public void RemoveFunds(Guid id, decimal amount) {
-        var account = GetAccountModelById(id);
+        var account = GetAccountById(id);
         account.Balance -= amount;
 
         _context.SaveChanges();

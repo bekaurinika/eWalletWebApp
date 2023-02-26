@@ -140,7 +140,7 @@ public class DbHelper {
     }
 
     public void UpdateAccount(Guid id, AccountModel model) {
-        var account = GetAccountModelById(id);
+        var account = GetAccountById(id);
         account.Name = model.Name ?? account.Name;
         account.Currency = model.Currency ?? account.Currency;
 
